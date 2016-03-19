@@ -4,7 +4,7 @@ This is an exercise or kata maybe, based on ideas about software
 development from the
 ["GOOS" book](http://www.growing-object-oriented-software.com/) and in
 this case to practise using various web technologies.
-<img src="http://www.growing-object-oriented-software.com/cover.jpg" style="float:right" />
+![The "GOOS" book](http://www.growing-object-oriented-software.com/cover.jpg){:style="float: right; margin-left: 1em;"}
 
 Here's the exercise: if you've ever run ```htop``` or ```ps wufax```
 on a linux or unix-like system, you will have seen a process tree
