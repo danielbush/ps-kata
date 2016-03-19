@@ -1,0 +1,21 @@
+{
+  "name": "ps-kata",
+  "version": "0.0.1",
+  "description": "kata for learning tdd from the GOOS book and various modern web technologies",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo todo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "TBC"
+  },
+  "keywords": [
+  ],
+  "author": "Daniel Bush",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
