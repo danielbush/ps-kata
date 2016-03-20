@@ -4,7 +4,7 @@
   "description": "kata for learning tdd from the GOOS book and various modern web technologies",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/cucumberjs"
+    "test": "node_modules/.bin/cucumberjs --require features/step_definitions/"
   },
   "repository": {
     "type": "git",
