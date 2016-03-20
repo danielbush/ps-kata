@@ -10,3 +10,20 @@ the problem we're trying to solve (agent-based monitoring).
 Commits that start with a failing test will be prefixed with CHALLENGE as in "this is
 the immediate problem we need to solve".
 
+------------------------------------------------------------
+
+We can run:
+
+  npm test
+
+now and cucumber will give us back our scenario with some helpful
+hints about how to implement the step definitions.
+
+We put the first definition in feature/step_definitions/ .
+
+And we decide to re-word the step from 'idle agent' to just 'agent'.
+We can make things more complicated later if we have to.
+
+We need an agent and we need it happily running on a target system (a
+system we'll be fetching the ps data from).  How to do this?
+
