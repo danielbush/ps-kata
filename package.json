@@ -4,18 +4,18 @@
   "description": "kata for learning tdd from the GOOS book and various modern web technologies",
   "main": "index.js",
   "scripts": {
-    "test": "echo todo"
+    "test": "node_modules/.bin/cucumberjs"
   },
   "repository": {
     "type": "git",
     "url": "TBC"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "Daniel Bush",
   "license": "BSD-2-Clause",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "cucumber": "^0.9.5",
+    "webdriverio": "^4.0.4"
   }
 }
