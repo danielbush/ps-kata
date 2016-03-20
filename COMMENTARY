@@ -1,0 +1,12 @@
+------------------------------------------------------------
+Chapter 1
+
+First, let's warm up.  For our acceptance tests, we will use cucumber js and webdriver.io.
+
+We'll focus on creating a simplified walking skeleton that developers can use.
+Then we may consider how to deploy it to a more realistic architecture that represents
+the problem we're trying to solve (agent-based monitoring).
+
+Commits that start with a failing test will be prefixed with CHALLENGE as in "this is
+the immediate problem we need to solve".
+
