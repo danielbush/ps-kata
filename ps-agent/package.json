@@ -1,0 +1,21 @@
+{
+  "name": "ps-kata",
+  "version": "0.0.1",
+  "description": "ps-agent - part of kata for learning tdd from the GOOS book and various modern web technologies",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo TODO",
+    "start": "gulp docker:run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielbush/ps-kata.git"
+  },
+  "keywords": [],
+  "author": "Daniel Bush",
+  "license": "BSD-2-Clause",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  }
+}
