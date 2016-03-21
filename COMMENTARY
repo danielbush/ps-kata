@@ -1,5 +1,4 @@
-------------------------------------------------------------
-Chapter 1
+## Session 1
 
 First, let's warm up.  For our acceptance tests, we will use cucumber js and webdriver.io.
 
@@ -27,3 +26,65 @@ We can make things more complicated later if we have to.
 We need an agent and we need it happily running on a target system (a
 system we'll be fetching the ps data from).  How to do this?
 
+Well, our agent will be a node process which will then try to talk to
+the main server when it has new information to send.
+And our target server could just be our system in a dev
+environment running the agent.
+
+Do we package the agent and server into different packages?
+
+eg
+
+- ps-agent
+- ps-server
+
+We'll use Docker to mimic a production environment.
+The agent and main server will run in their own docker containers.
+The server will contact the agent and make requests to it.
+
+With this in mind, we'll create 2 subdirectories which will
+act as separate npm packages in our repo:
+
+- ps-agent/
+- ps-server/
+
+Perhaps in a real project we would create separate git repos, but for
+our purposes we'll keep it all together.
+
+We can then create a test agent docker image using:
+
+    ps-agent/Dockerfile
+
+Building the agent would mean:
+
+- building the code if necessary
+- rebuilding the docker image with the latest code
+  - builds should be relatively fast after the first build
+    since the only change will be the app code in
+    subsequent builds
+
+Deploying the agent will simply mean starting up the docker container.
+
+Testing would mean doing similar steps for the main server and then driving
+a web browser to talk to the main server which would talk to the agent.
+We haven't got there yet, we're just trying to get the agent going.
+
+For our agent, let's use an ubuntu 14.04 container with nvm - since this
+might be a likely LTS system we would monitor in real life.
+
+We create some gulp commands to build and start a container in ps-agent/.
+
+  gulp docker:run # runs docker build
+  gulp docker:rm-container # to kill it and delete it
+
+What we're probably going to do next is:
+
+- construct a main server similar to our work with the agent above
+- have it call /ping on the agent
+  - we need to have it start up and know where to find the agent
+- have the agent respond with a 200 OK
+- have the main server return the OK for a route
+  GET /ping/:container-name
+- our browser will get back a blank 200 or json response; not very pretty yet, but
+  good enough to test a minimum path through the whole stack for our
+  walking skeleton
