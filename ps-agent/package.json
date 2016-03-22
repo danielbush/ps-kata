@@ -4,7 +4,7 @@
   "description": "ps-agent - part of kata for learning tdd from the GOOS book and various modern web technologies",
   "main": "index.js",
   "scripts": {
-    "test": "echo TODO",
+    "test": "node_modules/.bin/mocha --watch",
     "start": "gulp docker:run"
   },
   "repository": {
@@ -14,8 +14,13 @@
   "keywords": [],
   "author": "Daniel Bush",
   "license": "BSD-2-Clause",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.13.4"
+  },
   "devDependencies": {
-    "gulp": "^3.9.1"
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "mocha": "^2.4.5",
+    "supertest": "^1.2.0"
   }
 }
