@@ -22,3 +22,4 @@ ENV NVM="$NVM_DIR/nvm.sh"
 RUN . $NVM && nvm install 4.4
 RUN . $NVM && nvm use 4.4
 RUN . $NVM && node --version  # should print our version
+

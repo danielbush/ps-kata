@@ -16,6 +16,7 @@
   "dependencies": {},
   "devDependencies": {
     "cucumber": "^0.9.5",
+    "gulp": "^3.9.1",
     "webdriverio": "^4.0.4"
   }
 }
