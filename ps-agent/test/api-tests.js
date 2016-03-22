@@ -7,12 +7,7 @@
 
 const expect = require('chai').expect,
       request = require('supertest'),
-      express = require('express'),
-      app = express();
-
-app.get('/ping', function (req, res) {
-  res.status(200).end('pong');
-});
+      app = require('../app');
 
 describe('ping', function () {
 
