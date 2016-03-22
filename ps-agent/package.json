@@ -4,7 +4,7 @@
   "description": "ps-agent - part of kata for learning tdd from the GOOS book and various modern web technologies",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha --watch",
+    "test": "node_modules/.bin/mocha --watch --colors",
     "start": "gulp docker:run"
   },
   "repository": {
