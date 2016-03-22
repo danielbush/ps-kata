@@ -74,6 +74,7 @@ might be a likely LTS system we would monitor in real life.
 
 We create some gulp commands to build and start a container in ps-agent/.
 
+  cd ps-agent/
   gulp docker:run # runs docker build
   gulp docker:rm-container # to kill it and delete it
 
@@ -88,3 +89,8 @@ What we're probably going to do next is:
 - our browser will get back a blank 200 or json response; not very pretty yet, but
   good enough to test a minimum path through the whole stack for our
   walking skeleton
+
+So, we've added expressn and put in a minimal /ping for the ps-agent.
+We'll include a test in ps-agent to test this action in addition to
+our walking skeleton test - in the interests of test first.  This feature
+and test are minimal and we will refactor this and move on to the main server.
