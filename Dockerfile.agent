@@ -1,0 +1,11 @@
+FROM ps-kata-base
+
+USER root
+ADD .git /tmp/build/.git
+RUN chown -R node.node /tmp/build
+USER node
+RUN cd /tmp/build && git checkout -f master
+RUN rsync -a /tmp/build/ps-agent /app/
+WORKDIR /app/ps-agent
+RUN . $NVM && npm install --production
+

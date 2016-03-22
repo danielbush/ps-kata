@@ -23,3 +23,6 @@ RUN . $NVM && nvm install 4.4
 RUN . $NVM && nvm use 4.4
 RUN . $NVM && node --version  # should print our version
 
+USER root
+RUN apt-get install -qy git
+USER node
