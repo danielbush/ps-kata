@@ -25,4 +25,8 @@ RUN . $NVM && node --version  # should print our version
 
 USER root
 RUN apt-get install -qy git
+RUN echo '#!/bin/bash\n. $NVM\n$*' > /usr/local/bin/node-env
+RUN chmod a+x /usr/local/bin/node-env
+ENTRYPOINT ["/usr/local/bin/node-env"]
+
 USER node

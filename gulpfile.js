@@ -3,6 +3,7 @@ const gulp = require('gulp'),
 
 const DOCKER = {
   base: {
+    DOCKERFILE: "Dockerfile",
     IMAGENAME: "ps-kata-base",
     CONTAINER: "ps-kata-base"
   },
@@ -19,16 +20,15 @@ function printToConsole (process) {
 }
 
 gulp.task('docker:run', ['docker:rm-container', 'docker:build'], function () {
-  const cmd = 'cat',
-        dockerCmd = `docker run -id --name=${DOCKER.base.CONTAINER} ${DOCKER.base.IMAGENAME} bash -lc "${cmd}"`;
+  const dockerCmd = `docker run -t --name=${DOCKER.base.CONTAINER} ${DOCKER.base.IMAGENAME} node --version`;
   const run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
 
-gulp.task('docker:run:agent', ['docker:rm-container', 'docker:build'], function () {
-  const cmd = 'cat',
-        dockerCmd = `docker run -id --name=${DOCKER.agent.CONTAINER} ${DOCKER.agent.IMAGENAME} bash -lc "${cmd}"`;
-  const run = spawn('sudo', dockerCmd.split(' '));
+gulp.task('docker:run:agent', ['docker:rm-container', 'docker:build:agent'], function () {
+  const port = 4000,
+        dockerCmd = `docker run -i --name=${DOCKER.agent.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.agent.IMAGENAME} npm start`,
+        run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
 
@@ -40,7 +40,7 @@ gulp.task('docker:rm-container', function (cb) {
 })
 
 gulp.task('docker:build', function (cb) {
-  const dockerCmd = `docker build -t ${DOCKER.base.IMAGENAME} .`;
+  const dockerCmd = `docker build -f ${DOCKER.base.DOCKERFILE} -t ${DOCKER.base.IMAGENAME} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
   build.on('close', (err) => cb(err) )
   printToConsole(build);
