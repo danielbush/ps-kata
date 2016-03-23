@@ -1,4 +1,6 @@
-## Session 1
+# Session 1
+
+## 21-Mar-2016
 
 First, let's warm up.  For our acceptance tests, we will use cucumber js and webdriver.io.
 
@@ -90,7 +92,39 @@ What we're probably going to do next is:
   good enough to test a minimum path through the whole stack for our
   walking skeleton
 
-So, we've added expressn and put in a minimal /ping for the ps-agent.
+So, we've added express and put in a minimal /ping for the ps-agent.
 We'll include a test in ps-agent to test this action in addition to
 our walking skeleton test - in the interests of test first.  This feature
 and test are minimal and we will refactor this and move on to the main server.
+
+## 24-Mar-2016 - ps-agent docker finally done
+
+Somewhere in this process, we decided to move the docker build logic
+out of ps-agent/ and into the parent, which meant moving the gulpfile
+for doing docker builds into ps-agent/../ .
+
+So, after another session, we've got a working ps-agent docker
+container that we can build in the parent project to the ps-agent
+project.
+
+  gulp docker:run:agent # NO LONGER in ps-agent/ but in parent!
+
+should hopefully build a base docker image with our preferred node
+version and then build a ps-agent docker image and run our minimal
+ps-agent app
+
+There's a slightly kludgy node-env script defined in the base
+container to load the correct node version.  (I'm thinking of
+switching to 'n' but for the moment I'll stick with nvm.)
+
+Having a gulp file to build and run docker images and containers seems
+to be working nicely.  Having this same gulp file not be part of
+project (in this case it is in the parent directory to our ps-agent/
+project) seems to be the right thing at the moment; developers don't
+need docker to run the server in ps-agent/ or "unit" tests.  Any build
+logic specific to ps-agent (eg transpiling etc) will still go in
+ps-agent/.
+
+We can hopefully accelerate the build our minimal main server
+implementation (re-)using what we've done so far for ps-agent/.
+
