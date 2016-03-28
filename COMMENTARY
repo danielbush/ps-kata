@@ -128,3 +128,17 @@ ps-agent/.
 We can hopefully accelerate the build our minimal main server
 implementation (re-)using what we've done so far for ps-agent/.
 
+## 27-Mar-2016
+
+So, using "design by wishful thinking", the first thing we do is
+create a gulp task for starting the main server much like the
+ps-agent.
+
+  gulp docker:run:main-server
+
+and this will require
+
+  gulp docker:build:main-server
+
+By specifying what we want to see up front, we have a focus to work
+towards.
