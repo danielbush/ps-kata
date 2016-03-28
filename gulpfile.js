@@ -40,7 +40,7 @@ gulp.task('docker:run:agent', ['docker:rm-container', 'docker:build:agent'], fun
 
 gulp.task('docker:run:main-server', ['docker:build:main-server'], function () {
   const port = 4001,
-        dockerCmd = `docker run -i --name=${DOCKER.mainserver.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.mainserver.IMAGENAME} npm start`,
+        dockerCmd = `docker run -i --name=${DOCKER.mainServer.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.mainServer.IMAGENAME} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
