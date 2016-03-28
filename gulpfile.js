@@ -25,31 +25,24 @@ function printToConsole (process) {
   process.stderr.on('data', (data) => console.error(data.toString()) );
 }
 
-gulp.task('docker:run', ['docker:rm-container', 'docker:build'], function () {
+gulp.task('docker:run', ['docker:rm', 'docker:build'], function () {
   const dockerCmd = `docker run -t --name=${DOCKER.base.CONTAINER} ${DOCKER.base.IMAGENAME} node --version`;
   const run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
 
-gulp.task('docker:run:agent', ['docker:rm-container', 'docker:build:agent'], function () {
+gulp.task('docker:run:agent', ['docker:rm:agent', 'docker:build:agent'], function () {
   const port = 4000,
         dockerCmd = `docker run -i --name=${DOCKER.agent.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.agent.IMAGENAME} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
 
-gulp.task('docker:run:main-server', ['docker:build:main-server'], function () {
+gulp.task('docker:run:main-server', ['docker:rm:main-server', 'docker:build:main-server'], function () {
   const port = 4001,
         dockerCmd = `docker run -i --name=${DOCKER.mainServer.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.mainServer.IMAGENAME} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
-});
-
-gulp.task('docker:rm-container', function (cb) {
-  const dockerCmd = `docker rm -f ${DOCKER.agent.CONTAINER}`;
-  const kill = spawn('sudo', dockerCmd.split(' '));
-  kill.on('close', (err) => cb()); // ignore the error here
-  printToConsole(kill);
 });
 
 gulp.task('docker:build', function (cb) {
@@ -66,7 +59,6 @@ gulp.task('docker:build:agent', ['docker:build'], function (cb) {
   printToConsole(build);
 });
 
-
 gulp.task('docker:build:main-server', ['docker:build'], function (cb) {
   const dockerCmd = `docker build -f ${DOCKER.mainServer.DOCKERFILE} -t ${DOCKER.mainServer.IMAGENAME} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
@@ -74,8 +66,21 @@ gulp.task('docker:build:main-server', ['docker:build'], function (cb) {
   printToConsole(build);
 });
 
+// Delete agent and main server containers.
 
+function deleteContainer (containerName, cb) {
+  const dockerCmd = `docker rm -f ${containerName}`;
+  const kill = spawn('sudo', dockerCmd.split(' '));
+  kill.on('close', (err) => cb()); // ignore the error here
+  printToConsole(kill);
+}
 
+gulp.task('docker:rm', ['docker:rm:agent', 'docker:rm:main-server']);
 
+gulp.task('docker:rm:agent', function (cb) {
+  deleteContainer(DOCKER.agent.CONTAINER, cb);
+});
 
-
+gulp.task('docker:rm:main-server', function (cb) {
+  deleteContainer(DOCKER.mainServer.CONTAINER, cb);
+});
