@@ -4,7 +4,7 @@ const gulp = require('gulp'),
 
 const DOCKER = {
   base: {
-    DOCKERFILE: 'Dockerfile',
+    DOCKERFILE: 'Dockerfile.base',
     IMAGENAME: 'ps-kata-base',
     CONTAINER: 'ps-kata-base'
   },
@@ -25,11 +25,7 @@ function printToConsole (process) {
   process.stderr.on('data', (data) => console.error(data.toString()) );
 }
 
-gulp.task('docker:run', ['docker:rm', 'docker:build'], function () {
-  const dockerCmd = `docker run -t --name=${DOCKER.base.CONTAINER} ${DOCKER.base.IMAGENAME} node --version`;
-  const run = spawn('sudo', dockerCmd.split(' '));
-  printToConsole(run);
-});
+gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
 gulp.task('docker:run:agent', ['docker:rm:agent', 'docker:build:agent'], function () {
   const port = 4000,
@@ -45,21 +41,21 @@ gulp.task('docker:run:main-server', ['docker:rm:main-server', 'docker:build:main
   printToConsole(run);
 });
 
-gulp.task('docker:build', function (cb) {
+gulp.task('docker:build:base', function (cb) {
   const dockerCmd = `docker build -f ${DOCKER.base.DOCKERFILE} -t ${DOCKER.base.IMAGENAME} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
   build.on('close', (err) => cb(err) );
   printToConsole(build);
 });
 
-gulp.task('docker:build:agent', ['docker:build'], function (cb) {
+gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
   const dockerCmd = `docker build -f ${DOCKER.agent.DOCKERFILE} -t ${DOCKER.agent.IMAGENAME} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
   build.on('close', (err) => cb(err) );
   printToConsole(build);
 });
 
-gulp.task('docker:build:main-server', ['docker:build'], function (cb) {
+gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
   const dockerCmd = `docker build -f ${DOCKER.mainServer.DOCKERFILE} -t ${DOCKER.mainServer.IMAGENAME} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
   build.on('close', (err) => cb(err) );
