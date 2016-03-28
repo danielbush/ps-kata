@@ -12,6 +12,11 @@ const DOCKER = {
     DOCKERFILE: 'Dockerfile.agent',
     IMAGENAME: 'ps-kata-agent:0.1',
     CONTAINER: 'ps-kata-agent-1'
+  },
+  mainServer: {
+    DOCKERFILE: 'Dockerfile.main-server',
+    IMAGENAME: 'ps-kata-main-server:0.1',
+    CONTAINER: 'ps-kata-main-server-1'
   }
 };
 
@@ -29,6 +34,13 @@ gulp.task('docker:run', ['docker:rm-container', 'docker:build'], function () {
 gulp.task('docker:run:agent', ['docker:rm-container', 'docker:build:agent'], function () {
   const port = 4000,
         dockerCmd = `docker run -i --name=${DOCKER.agent.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.agent.IMAGENAME} npm start`,
+        run = spawn('sudo', dockerCmd.split(' '));
+  printToConsole(run);
+});
+
+gulp.task('docker:run:main-server', ['docker:build:main-server'], function () {
+  const port = 4001,
+        dockerCmd = `docker run -i --name=${DOCKER.mainserver.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.mainserver.IMAGENAME} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 });
@@ -53,6 +65,16 @@ gulp.task('docker:build:agent', ['docker:build'], function (cb) {
   build.on('close', (err) => cb(err) );
   printToConsole(build);
 });
+
+
+gulp.task('docker:build:main-server', ['docker:build'], function (cb) {
+  const dockerCmd = `docker build -f ${DOCKER.mainServer.DOCKERFILE} -t ${DOCKER.mainServer.IMAGENAME} .`;
+  const build = spawn('sudo', dockerCmd.split(' '));
+  build.on('close', (err) => cb(err) );
+  printToConsole(build);
+});
+
+
 
 
 
