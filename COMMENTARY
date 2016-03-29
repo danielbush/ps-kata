@@ -128,7 +128,7 @@ ps-agent/.
 We can hopefully accelerate the build our minimal main server
 implementation (re-)using what we've done so far for ps-agent/.
 
-## 27-Mar-2016
+## 27-Mar-2016 / 28-Mar-2016
 
 So, using "design by wishful thinking", the first thing we do is
 create a gulp task for starting the main server much like the
@@ -142,3 +142,39 @@ and this will require
 
 By specifying what we want to see up front, we have a focus to work
 towards.
+
+We now have a single gulp task that starts up our server infrastructure:
+
+  gulp docker:run
+
+This will start a test agent in a container and the main server in
+another container.  They start on ports 4000 and 4001 respectively.
+We can ping both of them and we wrote a ping test using supertest to
+verify this behaviour.
+
+In reality, our agent will run on many different environments we just
+put it in a container here to mimic one such situation.  We have more
+control over our main-server, we can require that it runs in a single
+specific container type such as the one we are using here.
+
+We still haven't completed our walking skeleton.  Recall that it must
+exercise the whole infrastructure in the most minimal way possible.
+
+Now is a time to revisit our initial cucumber tests and the use of
+webdriver since we can use these to drive the next set of actions we
+will be taking to establish the walking skeleton.
+
+We can run:
+
+  npm test
+
+in the root of this project to run the cucumber tests which runs our
+incomplete heartbeat feature that we started earlier.
+
+We have to start our world up using the cucumber world pattern.
+So we create one in
+
+  features/support/world.js
+
+We decide to do a before features hook in cucumber to start docker because
+it is currently quite slow.
