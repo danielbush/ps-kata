@@ -13,8 +13,10 @@
   "keywords": [],
   "author": "Daniel Bush",
   "license": "BSD-2-Clause",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
+    "async": "^2.0.0-rc.2",
     "cucumber": "^0.9.5",
     "gulp": "^3.9.1",
     "webdriverio": "^4.0.4"
