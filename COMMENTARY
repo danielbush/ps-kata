@@ -178,3 +178,70 @@ So we create one in
 
 We decide to do a before features hook in cucumber to start docker because
 it is currently quite slow.
+
+[31-Mar-2016]
+
+So, when we run
+
+  npm test
+
+we have docker both building and running in a before features hook in
+cucumber.  Then it checks that both apps are running by polling the
+ports of our main server and one agent we started.
+
+The deploy code we're building seems complicated enough that we might
+consider unit testing it.  Starting 2 docker containers and checking
+their services are online before continuing can have a bunch of
+surprising edge cases.  eg The deploy code has to handle situations
+such as a port being already used.
+
+My feeling is to get the pipeline working and ensure that failures are
+logged so the broken deployment can be fixed.
+
+The reality seems to be that our deployment is a separate node
+package.  In our case, it is the parent directory of the main server
+and ps agent.  (In the real world thess would be in sibling
+directories with their own git repositories.)
+
+We would probably want to re-use this deploy package across multiple
+projects.  And in that case, we would definitely want it tested.  But,
+since this is an exercise and I'm feeling my way with the deployment
+process here, I'm tempted to keep the tdd for the actual application
+code.  I'm just feeling my way with the integration glue code that
+we've written so far.  It's almost exploratory.  I'm still doing
+design by wishful thinking eg "imagine we have gulp task that already
+does X, it would look like..." and pretty much writing it before it's
+implemented.  For the moment I don't want to encumber this process
+with tests.
+
+So, where are we going:
+
+Running 'npm test' is hideously slow.
+It is potentially rebuliding docker images before running and polling
+for them.  Then, if that all seems to work, cucumber kicks in.
+
+This could force us to rethink what we're doing a little bit.
+Maybe we need to decouple starting our containers from building them.
+
+What we perhaps want to say is
+
+"build version X of our software"
+
+- checkout code with tag or version X
+- build docker image with version X
+
+Then we need routine that says:
+
+"do we have version X of the docker images in our docker repository or daemon"
+
+This is our gate for running our acceptance tests.
+
+Finally, we need an action that says:
+
+"Deploy version X (docker run our X-versioned containers) in our environment"
+(maybe deleting any running ones first)
+
+and
+
+"wait for them to be up"
+
