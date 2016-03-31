@@ -10,16 +10,17 @@ const debug = console.log.bind(console);
  * Wait for address:port${path} to return status code of 200.
  *
  * @param {string}   path - a uri path in absolute form eg "/ping".
+ * @param {string}   address - scheme + domain eg "http://localhost"
  * @param {function} cb Callback cb(err), err is passed if we fail to talk to address:port.
- * @param {integer} attemptCount Should only be set by this function when recursing.
+ * @param {integer}  attemptCount Should only be set by this function when recursing.
  */
 function waitForServer (path, address, port, cb, attempts, intervalSecs, attemptCount) {
   attempts = attempts ? attempts : 20;
   intervalSecs = intervalSecs ? intervalSecs : 2;
   attemptCount = attemptCount ? attemptCount : 0;
+  const addr = `${address}:${port}${path}`;
 
   const giveUpOrTryAgain = (res) => {
-    const addr = `${address}:${port}`;
     const statusCode = res ? res.statusCode : 'No connection';
     debug(`waitForServer: trying again for ${addr}`);
     if (attemptCount >= attempts) {
@@ -34,8 +35,9 @@ function waitForServer (path, address, port, cb, attempts, intervalSecs, attempt
     }
   };
 
-  const req = http.get(`http://localhost:4000${path}`, (res) => {
+  const req = http.get(addr, (res) => {
     if (res.statusCode === 200) {
+      debug(`waitForServer: SUCCESS ${addr}`);
       cb();
     }
     else {
@@ -69,8 +71,8 @@ module.exports = function () {
         // Just signal ok, we'll have to poll to determine if servers are running.
         cb();
       },
-      (cb) => waitForServer('/ping', 'localhost', 4000, cb), // TODO: hard-coded ports from our gulpfile, need to DRY these
-      (cb) => waitForServer('/ping', 'localhost', 4001, cb)
+      (cb) => waitForServer('/ping', 'http://localhost', 4000, cb), // TODO: hard-coded ports from our gulpfile, need to DRY these
+      (cb) => waitForServer('/ping', 'http://localhost', 4001, cb)
     ], (err, results) => {
       cb(err);
       if (err) throw err; // Cucumber js doesn't really stop well even with error.
@@ -78,4 +80,4 @@ module.exports = function () {
   });
 };
 
-
+//function waitF
