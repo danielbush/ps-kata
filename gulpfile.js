@@ -1,3 +1,4 @@
+'use strict';
 
 const gulp = require('gulp'),
       spawn = require('child_process').spawn;
@@ -11,11 +12,13 @@ const DOCKER = {
   agent: {
     DOCKERFILE: 'Dockerfile.agent',
     IMAGENAME: 'ps-kata-agent:0.1',
+    REPO: 'ps-kata-agent',
     CONTAINER: 'ps-kata-agent-1'
   },
   mainServer: {
     DOCKERFILE: 'Dockerfile.main-server',
     IMAGENAME: 'ps-kata-main-server:0.1',
+    REPO: 'ps-kata-main-server',
     CONTAINER: 'ps-kata-main-server-1'
   }
 };
@@ -25,20 +28,36 @@ function printToConsole (process) {
   process.stderr.on('data', (data) => console.error(data.toString()) );
 }
 
+
+/**
+ * Start a new container (docker run + npm start).
+ *
+ * This is asynchronous with no callback.
+ * No attempt is made to check success.
+ * @see waitForServer(s) function for checking if a service is up.
+ */
+function runContainer (repo, tag, name, port) {
+  if (!tag) {
+    throw new Error('Docker image TAG not specified.  TAG=xyz gulp ...');
+  }
+  const dockerCmd = `docker run -i --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
+        run = spawn('sudo', dockerCmd.split(' '));
+  printToConsole(run);
+}
+
+
 gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
-gulp.task('docker:run:agent', ['docker:rm:agent', 'docker:build:agent'], function () {
+gulp.task('docker:run:agent', ['docker:rm:agent'], function () {
   const port = 4000,
-        dockerCmd = `docker run -i --name=${DOCKER.agent.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.agent.IMAGENAME} npm start`,
-        run = spawn('sudo', dockerCmd.split(' '));
-  printToConsole(run);
+        tag = process.env.TAG;
+  runContainer(DOCKER.agent.REPO, tag, DOCKER.agent.CONTAINER, port);
 });
 
-gulp.task('docker:run:main-server', ['docker:rm:main-server', 'docker:build:main-server'], function () {
+gulp.task('docker:run:main-server', ['docker:rm:main-server'], function () {
   const port = 4001,
-        dockerCmd = `docker run -i --name=${DOCKER.mainServer.CONTAINER} -e NODE_PORT=${port} -p ${port}:${port} ${DOCKER.mainServer.IMAGENAME} npm start`,
-        run = spawn('sudo', dockerCmd.split(' '));
-  printToConsole(run);
+        tag = process.env.TAG;
+  runContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.CONTAINER, port);
 });
 
 gulp.task('docker:build:base', function (cb) {
