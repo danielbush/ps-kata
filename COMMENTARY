@@ -245,3 +245,36 @@ and
 
 "wait for them to be up"
 
+[1-Apr-2016]
+
+So, when we run 'npm test' we want our cucumber tests to pull a
+specific docker image rather than trying to build it.
+So we need to look at features/support/hooks.js.
+
+Our IMAGENAME'S in gulpfile.js are hardcoded to 0.1.
+
+Using "design by wishful thinking" again, what we want to see is:
+
+  TAG=xyz gulp run
+
+This will try to immediately start up our main server and agent
+containers with docker TAG xyz.  There's still the possibility that they have
+to be pulled down from a registry which if slow, could cause our
+cucumber hook to fail.  But after the first run, we will have that
+TAG locally in our docker daemon and things should run a lot more speedily!
+
+So, we need to decouple 'gulp run' from any docker building, which means
+decoupling docker:run:{agent,main-server} from docker:build:*
+
+For the build scripts we need to specific a docker TAG as well:
+
+  TAG=xyz gulp docker:build:agent
+  TAG=xyz gulp docker:build:main-server
+
+It might be enough right now to simply checkout master from github and
+build it with TAG=xyz.
+Each image we build is for some specific version of the code.
+A more sophisticate approach might be to decouple the docker image
+from the code and have the code as a separate docker volume container.
+But we'll stick with tying our docker TAG to a specific version of the
+the code for the moment as it is simpler and this is just an exercise.
