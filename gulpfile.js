@@ -45,6 +45,17 @@ function runContainer (repo, tag, name, port) {
   printToConsole(run);
 }
 
+// Run end-to-end tests.
+
+gulp.task('test', function (cb) {
+  const tag = process.env.TAG;
+  if (!tag) {
+    throw new Error('TAG env variable needs to be set (docker TAG): TAG=0.1 gulp test');
+  }
+  const runTests = spawn('node_modules/.bin/cucumberjs', '--require features/step_definitions/'.split(' '));
+  runTests.on('close', (err) => cb(err));
+  printToConsole(runTests);
+});
 
 gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
