@@ -23,6 +23,10 @@ const DOCKER = {
   }
 };
 
+const ERRORS = {
+  dockerTagNotSet: 'Docker image TAG not specified.  TAG=xyz gulp ...'
+};
+
 function printToConsole (process) {
   process.stdout.on('data', (data) => console.log(data.toString()) );
   process.stderr.on('data', (data) => console.error(data.toString()) );
@@ -38,11 +42,21 @@ function printToConsole (process) {
  */
 function runContainer (repo, tag, name, port) {
   if (!tag) {
-    throw new Error('Docker image TAG not specified.  TAG=xyz gulp ...');
+    throw new Error(ERRORS.dockerTagNotSet);
   }
   const dockerCmd = `docker run -i --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
+}
+
+function buildContainer (repo, tag, dockerfile, cb) {
+  const dockerCmd = `docker build -f ${dockerfile} -t ${repo}:${tag} .`;
+  const build = spawn('sudo', dockerCmd.split(' '));
+  if (!tag) {
+    throw new Error(ERRORS.dockerTagNotSet);
+  }
+  build.on('close', (err) => cb(err));
+  printToConsole(build);
 }
 
 // Run end-to-end tests.
@@ -50,7 +64,7 @@ function runContainer (repo, tag, name, port) {
 gulp.task('test', function (cb) {
   const tag = process.env.TAG;
   if (!tag) {
-    throw new Error('TAG env variable needs to be set (docker TAG): TAG=0.1 gulp test');
+    throw new Error(ERRORS.dockerTagNotSet);
   }
   const runTests = spawn('node_modules/.bin/cucumberjs', '--require features/step_definitions/'.split(' '));
   runTests.on('close', (err) => cb(err));
@@ -79,17 +93,13 @@ gulp.task('docker:build:base', function (cb) {
 });
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
-  const dockerCmd = `docker build -f ${DOCKER.agent.DOCKERFILE} -t ${DOCKER.agent.IMAGENAME} .`;
-  const build = spawn('sudo', dockerCmd.split(' '));
-  build.on('close', (err) => cb(err) );
-  printToConsole(build);
+  const tag = process.env.TAG;
+  buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
 });
 
 gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
-  const dockerCmd = `docker build -f ${DOCKER.mainServer.DOCKERFILE} -t ${DOCKER.mainServer.IMAGENAME} .`;
-  const build = spawn('sudo', dockerCmd.split(' '));
-  build.on('close', (err) => cb(err) );
-  printToConsole(build);
+  const tag = process.env.TAG;
+  buildContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.DOCKERFILE, cb);
 });
 
 // Delete agent and main server containers.
