@@ -307,3 +307,38 @@ This would probably look like:
      so we know precisely which commit this build is at
   => invoke gulp docker:build:agent or equivalent
 
+
+[3-Apr-2016]
+
+We're in transition:
+
+  TAG=xzy gulp build
+
+is now our build command.  At the moment it just builds the agent from the latest
+master on github and then has this copied into the docker container.
+
+To run this new agent, we do:
+
+  TAG=xzy gulp docker:run:agent
+
+
+> We need to do similarly for main-server and also do some refactoring.
+Also, gulp-git package is kind of awesome.
+
+I was considering getting the docker build script to pull from github.
+That would mean we would potentially have to have devdependencies for agent
+and main-server in the container so that we can run any additional build
+eg bundling.
+To avoid this we're doing it in gulp and building to a build/ where our
+dockerfile can access the already-built code.
+Another route might be to have a build container that
+has build / dev dependencies and have it bundle and build everything and
+simply have gulp imvoke this container.  That would mean defining a build
+container image and probably more moving parts.
+For the moment we're going with a more gulp-centric build solution and
+have docker simply copy it in when buliding our agent or main server.
+
+> Also 'gulp test' invokes 'waitForServers' which calls a bunch of gulp.
+  This is surprising behaviour.  'waitForServers' is also doing too much,
+  it's not really just waiting for both the agent and main-server.
+  So we really need to refactor this too.
