@@ -2,7 +2,8 @@
 
 const gulp = require('gulp'),
       spawn = require('child_process').spawn,
-      git = require('gulp-git');
+      git = require('gulp-git'),
+      utils = require('./utils');
 
 const DOCKER = {
   base: {
@@ -50,7 +51,7 @@ function getTagOrFail (tag) {
  */
 function runContainer (repo, tag, name, port) {
   getTagOrFail(tag);
-  const dockerCmd = `docker run -i --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
+  const dockerCmd = `docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
 }
@@ -106,6 +107,17 @@ gulp.task('build', function (cb) {
     ['docker:build:agent', 'docker:build:main-server'],
     cb
   );
+});
+
+// Start servers and wait for them to come up.
+
+gulp.task('start-servers', ['docker:run'], function (cb) {
+  async.parallel([
+    (cb) => utils.waitForServer('/ping', 'http://localhost', 4000, cb), // TODO: hard-coded ports from our gulpfile, need to DRY these
+    (cb) => utils.waitForServer('/ping', 'http://localhost', 4001, cb)
+  ], (err, results) => {
+    cb(err);
+  });
 });
 
 /**

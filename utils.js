@@ -89,5 +89,6 @@ function waitForServers (cb) {
 }
 
 module.exports = {
+  waitForServer: waitForServer,
   waitForServers: waitForServers
 };
