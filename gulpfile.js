@@ -1,7 +1,8 @@
 'use strict';
 
 const gulp = require('gulp'),
-      spawn = require('child_process').spawn;
+      spawn = require('child_process').spawn,
+      git = require('gulp-git');
 
 const DOCKER = {
   base: {
@@ -90,6 +91,41 @@ gulp.task('docker:build:base', function (cb) {
   const build = spawn('sudo', dockerCmd.split(' '));
   build.on('close', (err) => cb(err) );
   printToConsole(build);
+});
+
+const GITURL = 'git@github.com:danielbush/ps-kata.git';
+const async = require('async'),
+      del = require('del'),
+      ncp = require('ncp'),
+      fs = require('fs'),
+      runSequence = require('run-sequence');
+
+gulp.task('build', function (cb) {
+  runSequence(
+    'build:agent',
+    'docker:build:agent',
+    cb
+  );
+});
+
+gulp.task('build:clear', function (cb) {
+  del(['/tmp/build/*', './build/*'], { force: true }).then(paths => cb(), (err) => cb(err));
+});
+
+gulp.task('build:agent', ['build:clear'], function (cb) {
+  async.series([
+    (cb) => git.clone(GITURL, { args: '/tmp/build/agent' }, (err) => cb(err) ),
+    (cb) => git.checkout('master', { args: '-f', cwd: '/tmp/build/agent', quiet: false }, (err) => cb(err)),
+    (cb) => git.revParse(
+      { args: 'master' },
+      (hasherr, hash) => fs.writeFile(
+        '/tmp/build/agent/ps-agent/VERSION', hash, (err) => {
+          if (hasherr) cb(hasherr);
+          else cb(err);
+        })
+    ),
+    (cb) => ncp('/tmp/build/agent/ps-agent', './build/ps-agent', (err) => cb(err))
+  ], (err) => cb(err));
 });
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {

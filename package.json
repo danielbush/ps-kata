@@ -18,7 +18,11 @@
   "devDependencies": {
     "async": "^2.0.0-rc.2",
     "cucumber": "^0.9.5",
+    "del": "^2.2.0",
     "gulp": "^3.9.1",
+    "gulp-git": "^1.7.0",
+    "ncp": "^2.0.0",
+    "run-sequence": "^1.1.5",
     "webdriverio": "^4.0.4"
   }
 }
