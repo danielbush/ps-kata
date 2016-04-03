@@ -102,30 +102,49 @@ const async = require('async'),
 
 gulp.task('build', function (cb) {
   runSequence(
-    'build:agent',
-    'docker:build:agent',
+    ['build:agent', 'build:main-server'],
+    ['docker:build:agent', 'docker:build:main-server'],
     cb
   );
 });
 
-gulp.task('build:clear', function (cb) {
-  del(['/tmp/build/*', './build/*'], { force: true }).then(paths => cb(), (err) => cb(err));
-});
-
-gulp.task('build:agent', ['build:clear'], function (cb) {
+/**
+ * Checkout and build code for use in docker container.
+ *
+ * @param {string} giturl - git clone url
+ * @param {string} tmpdir - a building area on disk we git clone to
+ * @param {string} subdir - a subdir within our project (because we have nested projects in our git repo).
+ */
+function buildCode (giturl, tmpdir, subdir, cb) {
+  const BUILD_SRC = `${tmpdir}/${subdir}`;
+  const BUILD_DEST = `./build/${subdir}`;
+  if ( !(new RegExp('^/tmp/\\w+')).test(tmpdir) ) {
+    throw new Error(`Fail safe: ${tmpdir} should be /tmp/xxx/ or similar.`);
+  }
   async.series([
-    (cb) => git.clone(GITURL, { args: '/tmp/build/agent' }, (err) => cb(err) ),
-    (cb) => git.checkout('master', { args: '-f', cwd: '/tmp/build/agent', quiet: false }, (err) => cb(err)),
+    (cb) => del([tmpdir, BUILD_DEST], { force: true }).then((paths) => cb(), (err) => cb(err)),
+    (cb) => git.clone(giturl, { args: tmpdir }, (err) => cb(err) ),
+    (cb) => git.checkout('master', { args: '-f', cwd: tmpdir, quiet: false }, (err) => cb(err)),
     (cb) => git.revParse(
-      { args: 'master' },
+      { args: 'master', cwd: tmpdir },
       (hasherr, hash) => fs.writeFile(
-        '/tmp/build/agent/ps-agent/VERSION', hash, (err) => {
+        `${BUILD_SRC}/VERSION`,
+        hash,
+        (err) => {
           if (hasherr) cb(hasherr);
           else cb(err);
         })
     ),
-    (cb) => ncp('/tmp/build/agent/ps-agent', './build/ps-agent', (err) => cb(err))
+    (cb) => ncp(BUILD_SRC, BUILD_DEST, (err) => cb(err))
   ], (err) => cb(err));
+}
+
+gulp.task('build:agent', function (cb) {
+  buildCode(GITURL, '/tmp/build/agent', 'ps-agent', cb);
+});
+
+gulp.task('build:main-server', function (cb) {
+  buildCode(GITURL, '/tmp/build/main-server', 'main-server', cb);
 });
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {

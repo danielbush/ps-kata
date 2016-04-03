@@ -1,15 +1,7 @@
 FROM ps-kata-base
-
-# Build the application
+COPY build/main-server /app/main-server
 USER root
-ADD .git /tmp/build/.git
-RUN chown -R node.node /tmp/build
-USER node
-RUN cd /tmp/build && git checkout -f master
-RUN rsync -a /tmp/build/main-server /app/
+RUN chown -R node.node /app
 WORKDIR /app/main-server
 RUN node-env npm install --production
-# Other build steps might go here eg code transpiling.
-
 USER node
-
