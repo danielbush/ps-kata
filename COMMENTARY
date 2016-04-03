@@ -278,3 +278,32 @@ A more sophisticate approach might be to decouple the docker image
 from the code and have the code as a separate docker volume container.
 But we'll stick with tying our docker TAG to a specific version of the
 the code for the moment as it is simpler and this is just an exercise.
+
+[2-Apr-2016]
+
+At this point docker TAG's act as a reference point between running
+containers (for use in our walking skeleton and end-to-end tests) and
+building them.
+
+Running
+
+  TAG=0.1 npm test
+
+will run containers for docker TAG 0.1 or fail.
+Execution is a lot quicker than before.
+
+One more thing we need to consider though is the building each
+component incl things like code checkout.  Our build process will need
+to do this before building the docker containers.
+
+This would probably look like:
+
+  gulp build:agent
+  => checkout master of agent in build/agent
+  => build the agent gulp:build or similar in the agent package;
+     for client-side code this might lead to bundling`
+  => transfer to agent's dockerfile directory (if not already) and probably remove .git
+  => record the HEAD commit in a file VERSION maybe
+     so we know precisely which commit this build is at
+  => invoke gulp docker:build:agent or equivalent
+
