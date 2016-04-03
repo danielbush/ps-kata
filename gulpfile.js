@@ -33,6 +33,13 @@ function printToConsole (process) {
   process.stderr.on('data', (data) => console.error(data.toString()) );
 }
 
+function getTagOrFail (tag) {
+  tag = tag || process.env.TAG;
+  if (!tag) {
+    throw new Error(ERRORS.dockerTagNotSet);
+  }
+  return tag;
+}
 
 /**
  * Start a new container (docker run + npm start).
@@ -42,9 +49,7 @@ function printToConsole (process) {
  * @see waitForServer(s) function for checking if a service is up.
  */
 function runContainer (repo, tag, name, port) {
-  if (!tag) {
-    throw new Error(ERRORS.dockerTagNotSet);
-  }
+  getTagOrFail(tag);
   const dockerCmd = `docker run -i --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
         run = spawn('sudo', dockerCmd.split(' '));
   printToConsole(run);
@@ -53,9 +58,7 @@ function runContainer (repo, tag, name, port) {
 function buildContainer (repo, tag, dockerfile, cb) {
   const dockerCmd = `docker build -f ${dockerfile} -t ${repo}:${tag} .`;
   const build = spawn('sudo', dockerCmd.split(' '));
-  if (!tag) {
-    throw new Error(ERRORS.dockerTagNotSet);
-  }
+  getTagOrFail(tag);
   build.on('close', (err) => cb(err));
   printToConsole(build);
 }
@@ -63,10 +66,7 @@ function buildContainer (repo, tag, dockerfile, cb) {
 // Run end-to-end tests.
 
 gulp.task('test', function (cb) {
-  const tag = process.env.TAG;
-  if (!tag) {
-    throw new Error(ERRORS.dockerTagNotSet);
-  }
+  const tag = getTagOrFail();
   const runTests = spawn('node_modules/.bin/cucumberjs', '--require features/step_definitions/'.split(' '));
   runTests.on('close', (err) => cb(err));
   printToConsole(runTests);
@@ -76,7 +76,7 @@ gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
 gulp.task('docker:run:agent', ['docker:rm:agent'], function () {
   const port = 4000,
-        tag = process.env.TAG;
+        tag = getTagOrFail();
   runContainer(DOCKER.agent.REPO, tag, DOCKER.agent.CONTAINER, port);
 });
 
@@ -129,12 +129,12 @@ gulp.task('build:agent', ['build:clear'], function (cb) {
 });
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
-  const tag = process.env.TAG;
+  const tag = getTagOrFail();
   buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
 });
 
 gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
-  const tag = process.env.TAG;
+  const tag = getTagOrFail();
   buildContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.DOCKERFILE, cb);
 });
 
