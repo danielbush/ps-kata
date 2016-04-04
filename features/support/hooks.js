@@ -3,7 +3,7 @@
 const utils = require('../../utils');
 
 module.exports = function () {
-  this.registerHandler('BeforeFeatures', (event, cb) => utils.waitForServers(cb));
+  this.registerHandler('BeforeFeatures', (event, cb) => utils.startAndWaitForServers(cb));
 };
 
 

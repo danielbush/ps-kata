@@ -57,38 +57,17 @@ function waitForServer (path, address, port, cb, attempts, intervalSecs, attempt
   });
 }
 
-
-
 /**
  * Start servers and call cb once they're up.
+ *
+ * This is just a programmatic interface to 'gulp start-servers'.
  */
-function waitForServers (cb) {
-  async.series([
-    (cb) => {
-      debug('docker:rm START');
-      const rmDocker = spawn('gulp', ['docker:rm']);
-      rmDocker.stdout.on('data', (data) => console.log(data.toString()) ); // TODO: printToConsole
-      rmDocker.stderr.on('data', (data) => console.error(data.toString()) );
-      rmDocker.on('close', (err) => cb());
-      rmDocker.on('error', (err) => cb(err));
-    },
-    (cb) => {
-      debug('docker:run START');
-      const runDocker = spawn('gulp', ['docker:run']);
-      runDocker.stdout.on('data', (data) => console.log(data.toString()) ); // TODO: printToConsole
-      runDocker.stderr.on('data', (data) => console.error(data.toString()) );
-      // Just signal ok, we'll have to poll to determine if servers are running.
-      cb();
-    },
-    (cb) => waitForServer('/ping', 'http://localhost', 4000, cb), // TODO: hard-coded ports from our gulpfile, need to DRY these
-    (cb) => waitForServer('/ping', 'http://localhost', 4001, cb)
-  ], (err, results) => {
-    cb(err);
-    if (err) throw err; // Cucumber js doesn't really stop well even with error.
-  });
+function startAndWaitForServers (cb) {
+  const run = spawn('gulp', ['start-servers']);
+  run.on('close', (err) => cb(err));
 }
 
 module.exports = {
   waitForServer: waitForServer,
-  waitForServers: waitForServers
+  startAndWaitForServers: startAndWaitForServers
 };
