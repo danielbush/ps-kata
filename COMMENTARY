@@ -336,9 +336,29 @@ has build / dev dependencies and have it bundle and build everything and
 simply have gulp imvoke this container.  That would mean defining a build
 container image and probably more moving parts.
 For the moment we're going with a more gulp-centric build solution and
-have docker simply copy it in when buliding our agent or main server.
+have docker simply copy the result in when building our agent or main server.
 
 > Also 'gulp test' invokes 'waitForServers' which calls a bunch of gulp.
   This is surprising behaviour.  'waitForServers' is also doing too much,
   it's not really just waiting for both the agent and main-server.
   So we really need to refactor this too.
+
+[4-Apr-2016]
+
+We now have
+
+  TAG=xzy gulp build # builds TAG
+  TAG=xzy gulp run   # runs TAG
+  TAG=xzy gulp start-servers # which does 'gulp run' but also waits
+  TAG=xzy gulp test  # tests TAG=xzy with our main-server and one agent
+  TAG=xzy npm test   # runs gulp test
+
+We've replaced waitForServers with a 'gulp start-servers' task and a
+little less plumbing.
+
+Finally, we can go back to 'npm test' and implement an initial walking
+skeleton test which will attempt to test the whole stack (with one
+running agent) in an end-to-end fashion.
+
+>> We might want to refactor our gulpfile a little as well to keep
+   the task structure clear
