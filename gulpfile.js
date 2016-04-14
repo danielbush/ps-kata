@@ -29,11 +29,6 @@ const ERRORS = {
   dockerTagNotSet: 'Docker image TAG not specified.  TAG=xyz gulp ...'
 };
 
-function printToConsole (process) {
-  process.stdout.on('data', (data) => console.log(data.toString()) );
-  process.stderr.on('data', (data) => console.error(data.toString()) );
-}
-
 function getDockerTagOrFail (tag) {
   tag = tag || process.env.TAG;
   if (!tag) {
