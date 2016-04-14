@@ -57,14 +57,9 @@ function waitForServer (path, address, port, cb, attempts, intervalSecs, attempt
   });
 }
 
-/**
- * Start servers and call cb once they're up.
- *
- * This is just a programmatic interface to 'gulp start-test-environment'.
- */
-function startAndWaitForServers (cb) {
-  const run = spawn('gulp', ['start-test-environment']);
-  run.on('close', (err) => cb(err));
+function runGulpTask (task, cb) {
+  const run = spawn('gulp', [task]);
+  run.on('exit', (err) => cb(err));
 }
 
 
@@ -87,7 +82,7 @@ function waitForTestServers (mainServerPort, agentPort, cb) {
 }
 
 module.exports = {
+  runGulpTask: runGulpTask,
   waitForServer: waitForServer,
-  waitForTestServers: waitForTestServers,
-  startAndWaitForServers: startAndWaitForServers
+  waitForTestServers: waitForTestServers
 };
