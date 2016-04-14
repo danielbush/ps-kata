@@ -66,7 +66,7 @@ function buildContainer (repo, tag, dockerfile, cb) {
 
 // Run end-to-end tests.
 
-gulp.task('test', function (cb) {
+gulp.task('test:cucumber', function (cb) {
   const tag = getTagOrFail();
   const runTests = spawn('node_modules/.bin/cucumberjs', '--require features/step_definitions/'.split(' '));
   runTests.on('close', (err) => cb(err));
@@ -109,15 +109,12 @@ gulp.task('build', function (cb) {
   );
 });
 
-// Start servers and wait for them to come up.
+// Start environment suitable for acceptance testing.
 
-gulp.task('start-servers', ['docker:run'], function (cb) {
-  async.parallel([
-    (cb) => utils.waitForServer('/ping', 'http://localhost', 4000, cb), // TODO: hard-coded ports from our gulpfile, need to DRY these
-    (cb) => utils.waitForServer('/ping', 'http://localhost', 4001, cb)
-  ], (err, results) => {
-    cb(err);
-  });
+gulp.task('start-test-environment', ['docker:run', 'wait-for-test-servers']);
+
+gulp.task('wait-for-test-servers', function (cb) {
+  utils.waitForTestServers(4000, 4001, cb);
 });
 
 /**
