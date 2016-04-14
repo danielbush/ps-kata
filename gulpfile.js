@@ -34,7 +34,7 @@ function printToConsole (process) {
   process.stderr.on('data', (data) => console.error(data.toString()) );
 }
 
-function getTagOrFail (tag) {
+function getDockerTagOrFail (tag) {
   tag = tag || process.env.TAG;
   if (!tag) {
     throw new Error(ERRORS.dockerTagNotSet);
@@ -50,13 +50,13 @@ function getTagOrFail (tag) {
  * @see waitForServer(s) function for checking if a service is up.
  */
 function runContainer (repo, tag, name, port) {
-  getTagOrFail(tag);
+  getDockerTagOrFail(tag);
   const dockerCmd = `sudo docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`;
   utils.runCommand(dockerCmd);
 }
 
 function buildContainer (repo, tag, dockerfile, cb) {
-  getTagOrFail(tag);
+  getDockerTagOrFail(tag);
   const dockerCmd = `sudo docker build -f ${dockerfile} -t ${repo}:${tag} .`;
   utils.runCommand(dockerCmd, cb);
 }
@@ -64,7 +64,7 @@ function buildContainer (repo, tag, dockerfile, cb) {
 // Run end-to-end tests.
 
 gulp.task('test:cucumber', function (cb) {
-  const tag = getTagOrFail();
+  const tag = getDockerTagOrFail();
   utils.runCommand('node_modules/.bin/cucumberjs --require features/step_definitions/', cb);
 });
 
@@ -72,7 +72,7 @@ gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
 gulp.task('docker:run:agent', ['docker:rm:agent'], function () {
   const port = 4000,
-        tag = getTagOrFail();
+        tag = getDockerTagOrFail();
   runContainer(DOCKER.agent.REPO, tag, DOCKER.agent.CONTAINER, port);
 });
 
@@ -151,12 +151,12 @@ gulp.task('build:main-server', function (cb) {
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
   // NOTE: Dockerfile looks for build/ps-agent made by build:agent; requires build:agent
-  const tag = getTagOrFail();
+  const tag = getDockerTagOrFail();
   buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
 });
 
 gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
-  const tag = getTagOrFail();
+  const tag = getDockerTagOrFail();
   buildContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.DOCKERFILE, cb);
 });
 
