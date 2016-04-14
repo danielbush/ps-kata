@@ -62,6 +62,20 @@ function runGulpTask (task, cb) {
   run.on('exit', (err) => cb(err));
 }
 
+function printToConsole (process) {
+  process.stdout.on('data', (data) => console.log(data.toString()) );
+  process.stderr.on('data', (data) => console.error(data.toString()) );
+}
+
+function runCommand (cmdString, cb) {
+  let args = cmdString.split(/\s+/);
+  let first = args[0];
+  args.shift();
+  let run = spawn(first, args);
+  printToConsole(run);
+  if (cb) run.on('exit', (err) => cb(err));
+}
+
 
 /**
  * Wait for main server and one agent server on ports we specify.
@@ -82,6 +96,7 @@ function waitForTestServers (mainServerPort, agentPort, cb) {
 }
 
 module.exports = {
+  runCommand: runCommand,
   runGulpTask: runGulpTask,
   waitForServer: waitForServer,
   waitForTestServers: waitForTestServers

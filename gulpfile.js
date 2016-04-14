@@ -51,26 +51,21 @@ function getTagOrFail (tag) {
  */
 function runContainer (repo, tag, name, port) {
   getTagOrFail(tag);
-  const dockerCmd = `docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`,
-        run = spawn('sudo', dockerCmd.split(' '));
-  printToConsole(run);
+  const dockerCmd = `sudo docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`;
+  utils.runCommand(dockerCmd);
 }
 
 function buildContainer (repo, tag, dockerfile, cb) {
-  const dockerCmd = `docker build -f ${dockerfile} -t ${repo}:${tag} .`;
-  const build = spawn('sudo', dockerCmd.split(' '));
   getTagOrFail(tag);
-  build.on('close', (err) => cb(err));
-  printToConsole(build);
+  const dockerCmd = `sudo docker build -f ${dockerfile} -t ${repo}:${tag} .`;
+  utils.runCommand(dockerCmd, cb);
 }
 
 // Run end-to-end tests.
 
 gulp.task('test:cucumber', function (cb) {
   const tag = getTagOrFail();
-  const runTests = spawn('node_modules/.bin/cucumberjs', '--require features/step_definitions/'.split(' '));
-  runTests.on('close', (err) => cb(err));
-  printToConsole(runTests);
+  utils.runCommand('node_modules/.bin/cucumberjs --require features/step_definitions/', cb);
 });
 
 gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
@@ -88,10 +83,8 @@ gulp.task('docker:run:main-server', ['docker:rm:main-server'], function () {
 });
 
 gulp.task('docker:build:base', function (cb) {
-  const dockerCmd = `docker build -f ${DOCKER.base.DOCKERFILE} -t ${DOCKER.base.IMAGENAME} .`;
-  const build = spawn('sudo', dockerCmd.split(' '));
-  build.on('close', (err) => cb(err) );
-  printToConsole(build);
+  const dockerCmd = `sudo docker build -f ${DOCKER.base.DOCKERFILE} -t ${DOCKER.base.IMAGENAME} .`;
+  utils.runCommand(dockerCmd, cb);
 });
 
 const GITURL = 'git@github.com:danielbush/ps-kata.git';
@@ -157,6 +150,7 @@ gulp.task('build:main-server', function (cb) {
 });
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
+  // NOTE: Dockerfile looks for build/ps-agent made by build:agent; requires build:agent
   const tag = getTagOrFail();
   buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
 });
@@ -169,10 +163,8 @@ gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
 // Delete agent and main server containers.
 
 function deleteContainer (containerName, cb) {
-  const dockerCmd = `docker rm -f ${containerName}`;
-  const kill = spawn('sudo', dockerCmd.split(' '));
-  kill.on('close', (err) => cb()); // ignore the error here
-  printToConsole(kill);
+  const dockerCmd = `sudo docker rm -f ${containerName}`;
+  utils.runCommand(dockerCmd, cb);
 }
 
 gulp.task('docker:rm', ['docker:rm:agent', 'docker:rm:main-server']);
