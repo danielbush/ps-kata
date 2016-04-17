@@ -29,37 +29,10 @@ const ERRORS = {
   dockerTagNotSet: 'Docker image TAG not specified.  TAG=xyz gulp ...'
 };
 
-function getDockerTagOrFail (tag) {
-  tag = tag || process.env.TAG;
-  if (!tag) {
-    throw new Error(ERRORS.dockerTagNotSet);
-  }
-  return tag;
-}
-
-/**
- * Start a new container (docker run + npm start).
- *
- * This is asynchronous with no callback.
- * No attempt is made to check success.
- * @see waitForServer(s) function for checking if a service is up.
- */
-function runContainer (repo, tag, name, port) {
-  getDockerTagOrFail(tag);
-  const dockerCmd = `sudo docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`;
-  utils.runCommand(dockerCmd);
-}
-
-function buildContainer (repo, tag, dockerfile, cb) {
-  getDockerTagOrFail(tag);
-  const dockerCmd = `sudo docker build -f ${dockerfile} -t ${repo}:${tag} .`;
-  utils.runCommand(dockerCmd, cb);
-}
-
 // Run end-to-end tests.
 
 gulp.task('test:cucumber', function (cb) {
-  const tag = getDockerTagOrFail();
+  const tag = utils.getDockerTagOrFail();
   utils.runCommand('node_modules/.bin/cucumberjs --require features/step_definitions/', cb);
 });
 
@@ -67,14 +40,14 @@ gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
 gulp.task('docker:run:agent', ['docker:rm:agent'], function () {
   const port = 4000,
-        tag = getDockerTagOrFail();
-  runContainer(DOCKER.agent.REPO, tag, DOCKER.agent.CONTAINER, port);
+        tag = utils.getDockerTagOrFail();
+  utils.runContainer(DOCKER.agent.REPO, tag, DOCKER.agent.CONTAINER, port);
 });
 
 gulp.task('docker:run:main-server', ['docker:rm:main-server'], function () {
   const port = 4001,
         tag = process.env.TAG;
-  runContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.CONTAINER, port);
+  utils.runContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.CONTAINER, port);
 });
 
 gulp.task('docker:build:base', function (cb) {
@@ -146,13 +119,13 @@ gulp.task('build:main-server', function (cb) {
 
 gulp.task('docker:build:agent', ['docker:build:base'], function (cb) {
   // NOTE: Dockerfile looks for build/ps-agent made by build:agent; requires build:agent
-  const tag = getDockerTagOrFail();
-  buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
+  const tag = utils.getDockerTagOrFail();
+  utils.buildContainer(DOCKER.agent.REPO, tag, DOCKER.agent.DOCKERFILE, cb);
 });
 
 gulp.task('docker:build:main-server', ['docker:build:base'], function (cb) {
-  const tag = getDockerTagOrFail();
-  buildContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.DOCKERFILE, cb);
+  const tag = utils.getDockerTagOrFail();
+  utils.buildContainer(DOCKER.mainServer.REPO, tag, DOCKER.mainServer.DOCKERFILE, cb);
 });
 
 // Delete agent and main server containers.

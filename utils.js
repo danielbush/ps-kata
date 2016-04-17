@@ -12,6 +12,15 @@ const spawn = require('child_process').spawn,
       async = require('async');
 const debug = console.log.bind(console);
 
+function getDockerTagOrFail (tag) {
+  tag = tag || process.env.TAG;
+  if (!tag) {
+    throw new Error(ERRORS.dockerTagNotSet);
+  }
+  return tag;
+}
+
+
 /**
  * Wait for address:port${path} to return status code of 200.
  *
@@ -95,7 +104,30 @@ function waitForTestServers (mainServerPort, agentPort, cb) {
   });
 }
 
+/**
+ * Start a new container (docker run + npm start).
+ *
+ * This is asynchronous with no callback.
+ * No attempt is made to check success.
+ * @see waitForServer(s) function for checking if a service is up.
+ */
+function runContainer (repo, tag, name, port) {
+  getDockerTagOrFail(tag);
+  const dockerCmd = `sudo docker run -d --name=${name} -e NODE_PORT=${port} -p ${port}:${port} ${repo}:${tag} npm start`;
+  runCommand(dockerCmd);
+}
+
+function buildContainer (repo, tag, dockerfile, cb) {
+  getDockerTagOrFail(tag);
+  const dockerCmd = `sudo docker build -f ${dockerfile} -t ${repo}:${tag} .`;
+  runCommand(dockerCmd, cb);
+}
+
+
 module.exports = {
+  getDockerTagOrFail: getDockerTagOrFail,
+  buildContainer: buildContainer,
+  runContainer: runContainer,
   runCommand: runCommand,
   runGulpTask: runGulpTask,
   waitForServer: waitForServer,
