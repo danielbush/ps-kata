@@ -362,3 +362,25 @@ running agent) in an end-to-end fashion.
 
 >> We might want to refactor our gulpfile a little as well to keep
    the task structure clear
+
+[17-Apr-2016]
+
+We've stripped out a lot of utilties and configs into utils.js and config.js.
+And we've boiled the gulp task interface to a set of main tasks:
+
+  TAG=xzy gulp build
+               checks out and builds our code and docker images
+  TAG=xzy gulp test:cucumber (npm test)
+               run cucumber end-to-end tests (which also starts up our test environment)
+  TAG=xzy gulp test:start-environment
+               starts up a main server and agent; used by cucumber tests (above)
+  TAG=xzy gulp docker:run
+               starts up docker main server and a single agent
+
+As before, we have 3 npm packages:
+
+  ./package.json
+  ps-agent/package.json
+  main-server/package.json
+
+The parent package, this directory, is our deployment package.
