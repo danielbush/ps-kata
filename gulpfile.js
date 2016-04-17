@@ -29,13 +29,13 @@ gulp.task('test:start-environment', ['docker:run', 'test:wait-for-servers']);
 gulp.task('docker:run', ['docker:run:agent', 'docker:run:main-server']);
 
 gulp.task('docker:run:agent', ['docker:rm:agent'], function () {
-  const port = 4000,
+  const port = config.TEST.agent.port,
         tag = utils.getDockerTagOrFail();
   utils.runContainer(config.DOCKER.agent.REPO, tag, config.DOCKER.agent.CONTAINER, port);
 });
 
 gulp.task('docker:run:main-server', ['docker:rm:main-server'], function () {
-  const port = 4001,
+  const port = config.TEST.mainServer.port,
         tag = process.env.TAG;
   utils.runContainer(config.DOCKER.mainServer.REPO, tag, config.DOCKER.mainServer.CONTAINER, port);
 });
@@ -50,7 +50,7 @@ gulp.task('docker:build:base', function (cb) {
 
 
 gulp.task('test:wait-for-servers', function (cb) {
-  utils.waitForTestServers(4000, 4001, cb);
+  utils.waitForTestServers(config.TEST.mainServer.port, config.TEST.agent.port, cb);
 });
 
 gulp.task('build:agent', function (cb) {

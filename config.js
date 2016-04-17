@@ -18,5 +18,13 @@ module.exports = {
       REPO: 'ps-kata-main-server',
       CONTAINER: 'ps-kata-main-server-1'
     }
+  },
+  TEST: {
+    mainServer: {
+      port: 4000
+    },
+    agent: {
+      port: 4001
+    }
   }
 };
