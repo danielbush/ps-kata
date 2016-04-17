@@ -9,7 +9,12 @@
 
 const spawn = require('child_process').spawn,
       http = require('http'),
-      async = require('async');
+      async = require('async'),
+      fs = require('fs'),
+      del = require('del'),
+      ncp = require('ncp'),
+      git = require('gulp-git'),
+      ERRORS = require('./errors');
 const debug = console.log.bind(console);
 
 function getDockerTagOrFail (tag) {
@@ -123,13 +128,62 @@ function buildContainer (repo, tag, dockerfile, cb) {
   runCommand(dockerCmd, cb);
 }
 
+// Delete agent and main server containers.
+
+function deleteContainer (containerName, cb) {
+  const dockerCmd = `sudo docker rm -f ${containerName}`;
+  runCommand(dockerCmd, cb);
+}
+
+
+/**
+ * Checkout and build code for use in docker container.
+ *
+ * NOTE: this seems to run standalone, but be aware it uses gulp-git
+ * so the assumption is that is used within a gulp task.
+ *
+ * @param {string} giturl - git clone url
+ * @param {string} tmpdir - a building area on disk we git clone to
+ * @param {string} subdir - a subdir within our project (because we have nested projects in our git repo).
+ */
+function buildCode (giturl, tmpdir, subdir, cb) {
+  const BUILD_SRC = `${tmpdir}/${subdir}`;
+  const BUILD_DEST = `./build/${subdir}`;
+  if ( !(new RegExp('^/tmp/\\w+')).test(tmpdir) ) {
+    throw new Error(`Fail safe: ${tmpdir} should be /tmp/xxx/ or similar.`);
+  }
+  async.series([
+    (cb) => del([tmpdir, BUILD_DEST], { force: true }).then((paths) => cb(), (err) => cb(err)),
+    (cb) => git.clone(giturl, { args: tmpdir }, (err) => cb(err) ),
+    (cb) => git.checkout('master', { args: '-f', cwd: tmpdir, quiet: false }, (err) => cb(err)),
+    (cb) => git.revParse(
+      { args: 'master', cwd: tmpdir },
+      (hasherr, hash) => fs.writeFile(
+        `${BUILD_SRC}/VERSION`,
+        hash,
+        (err) => {
+          if (hasherr) cb(hasherr);
+          else cb(err);
+        })
+    ),
+    (cb) => ncp(BUILD_SRC, BUILD_DEST, (err) => cb(err))
+  ], (err) => cb(err));
+}
+
+
 
 module.exports = {
-  getDockerTagOrFail: getDockerTagOrFail,
-  buildContainer: buildContainer,
-  runContainer: runContainer,
   runCommand: runCommand,
   runGulpTask: runGulpTask,
   waitForServer: waitForServer,
-  waitForTestServers: waitForTestServers
+
+  buildCode: buildCode,
+  waitForTestServers: waitForTestServers,
+
+  getDockerTagOrFail: getDockerTagOrFail,
+  buildContainer: buildContainer,
+  runContainer: runContainer,
+  deleteContainer: deleteContainer
+
 };
+
